@@ -19,27 +19,27 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 114421170176
-    m_Localized: Increase movement speed +2
+    m_Localized: Increase movement speed
     m_Metadata:
       m_Items: []
   - m_Id: 81915314176
-    m_Localized: Increase attack speed +2
+    m_Localized: Increase attack speed
     m_Metadata:
       m_Items: []
   - m_Id: 104619081728
-    m_Localized: Increase health +%10
+    m_Localized: Increase health
     m_Metadata:
       m_Items: []
   - m_Id: 124361670656
-    m_Localized: Increase magnet area +1
+    m_Localized: Increase magnet area
     m_Metadata:
       m_Items: []
   - m_Id: 170373185536
-    m_Localized: Increase attack power +3
+    m_Localized: Increase attack power
     m_Metadata:
       m_Items: []
   - m_Id: 182603776000
-    m_Localized: Increase attack range +3
+    m_Localized: Increase attack range
     m_Metadata:
       m_Items: []
   - m_Id: 5791163802484736

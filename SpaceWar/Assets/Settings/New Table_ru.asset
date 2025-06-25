@@ -150,6 +150,11 @@ MonoBehaviour:
     m_Localized: "\u042F\u0417\u042B\u041A"
     m_Metadata:
       m_Items: []
+  - m_Id: 11923623307657216
+    m_Localized: "\u041D\u0410\u0416\u041C\u0418\u0422\u0415 \u041D\u0410 \u042D\u041A\u0420\u0410\u041D,
+      \u0427\u0422\u041E\u0411\u042B \u041D\u0410\u0427\u0410\u0422\u042C"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

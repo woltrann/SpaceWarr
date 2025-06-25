@@ -58,6 +58,7 @@ public class GameManager : MonoBehaviour
     public GameObject SkillsPanel;
     public GameObject PausePanel;
     public GameObject SettingPanel;
+    public GameObject InfoPanel;
     public GameObject LanguagePanel;
     public GameObject GameOverPanel;
     public GameObject CongratsPanel;
@@ -308,6 +309,8 @@ public class GameManager : MonoBehaviour
         BGPanel.SetActive(SettingPanel.activeSelf);
         LanguagePanel.SetActive(false);
     }
+
+    public void InfoPanelOC() => InfoPanel.SetActive(!InfoPanel.activeSelf);
     public void LanguagePanelOC() => LanguagePanel.SetActive(!LanguagePanel.activeSelf);
     public void GUIPanelOC() => GUIPanel.SetActive(!GUIPanel.activeSelf);
     public void MainPanelOC() => MainPanel.SetActive(!MainPanel.activeSelf);

@@ -147,6 +147,10 @@ MonoBehaviour:
     m_Localized: "D\u0130L"
     m_Metadata:
       m_Items: []
+  - m_Id: 11923623307657216
+    m_Localized: "BA\u015ELATMAK \u0130\xC7\u0130N EKRANA DOKUN"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

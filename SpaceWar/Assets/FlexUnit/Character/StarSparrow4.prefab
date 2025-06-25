@@ -424,6 +424,10 @@ MonoBehaviour:
   hitParticle: {fileID: 4929808257053317446, guid: 2ad7ec8bfd5899c43ab80149182f3139, type: 3}
   joystick: {fileID: 0}
   enemyMoveOff: 0
+  enemyBulletOff: 0
+  isInvisible: 0
+  isDashing: 0
+  damageBoost: 0
 --- !u!82 &7657802251547550948
 AudioSource:
   m_ObjectHideFlags: 0

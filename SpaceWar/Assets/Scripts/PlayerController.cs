@@ -51,6 +51,10 @@ public class PlayerSmoothFollow : MonoBehaviour
     private Transform nearestEnemy;
 
     public bool enemyMoveOff = false;
+    public bool enemyBulletOff = false;
+    public bool isInvisible = false;
+    public bool isDashing = false;
+    public bool damageBoost = false;
 
 
     private void Awake()
@@ -158,8 +162,8 @@ public class PlayerSmoothFollow : MonoBehaviour
     }
     public void TakeDamage(float amount)
     {
-        if (SkillDropSlot.Instance.isDashing) return;
-        if (SkillDropSlot.Instance.isInvisible) return; // hedefleme veya vurma iptal
+        if (isDashing) return;
+        if (isInvisible) return; // hedefleme veya vurma iptal
 
         Vibration.Vibrate(GameManager.Instance.vibrateValue);
         Health -= amount* damageMultiplier;
@@ -194,7 +198,7 @@ public class PlayerSmoothFollow : MonoBehaviour
     public void UseSkill10() => StartCoroutine(Skill10Coroutine());
     public IEnumerator Skill10Coroutine()
     {
-        SkillDropSlot.Instance.damageBoost = true;
+        damageBoost = true;
 
         // Orijinal değerleri kaydet
         float originalAttackPower = runtimeStats.attackPower;
@@ -216,7 +220,7 @@ public class PlayerSmoothFollow : MonoBehaviour
 
         damageMultiplier = 1f;  // hasar normal seviyeye döndü
 
-        SkillDropSlot.Instance.damageBoost = false;
+        damageBoost = false;
     }
 
     private void Die()
@@ -243,10 +247,10 @@ public class PlayerSmoothFollow : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if ( other.CompareTag("Enemy"))
+        if ( other.CompareTag("Enemy") && SkillDropSlot.Instance.shieldObject.activeSelf == false)
         {
-            if (SkillDropSlot.Instance.isDashing) return;
-            if (SkillDropSlot.Instance.isInvisible) return; // hedefleme veya vurma iptal
+            if (isDashing) return;
+            if (isInvisible) return; // hedefleme veya vurma iptal
             transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
             Vibration.Vibrate(GameManager.Instance.vibrateValue * 5);
 

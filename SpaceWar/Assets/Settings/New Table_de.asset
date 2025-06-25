@@ -146,6 +146,10 @@ MonoBehaviour:
     m_Localized: SPRACHE
     m_Metadata:
       m_Items: []
+  - m_Id: 11923623307657216
+    m_Localized: TIPPE AUF DEN BILDSCHIRM, UM ZU STARTEN
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
