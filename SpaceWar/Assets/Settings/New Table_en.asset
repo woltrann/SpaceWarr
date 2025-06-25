@@ -146,6 +146,10 @@ MonoBehaviour:
     m_Localized: LANGUAGE
     m_Metadata:
       m_Items: []
+  - m_Id: 11923623307657216
+    m_Localized: TAP THE SCREEN TO START
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

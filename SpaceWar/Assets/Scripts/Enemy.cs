@@ -55,14 +55,10 @@ public class Enemy : MonoBehaviour
 
         statMultiplier = 0;
     }
-
-
-
     private void Update()
     {
         if (playerTransform == null) return;
-        //if (SkillDropSlot.Instance.enemyMoveOff) return;
-        if (SkillDropSlot.Instance.isInvisible) return;
+        if (PlayerSmoothFollow.Instance.isInvisible) return;
 
         if (maxHealth > 0 && !PlayerSmoothFollow.Instance.enemyMoveOff)
         {
@@ -76,8 +72,10 @@ public class Enemy : MonoBehaviour
             if (distanceToPlayer <= attackRange)
             {
                 shootTimer += Time.deltaTime;
-                if (shootTimer >= shootInterval)
+                if (shootTimer >= shootInterval )
                 {
+                    if (PlayerSmoothFollow.Instance.enemyBulletOff) return; // hedefleme veya vurma iptal
+                    if (PlayerSmoothFollow.Instance.isInvisible) return;
                     Shoot();
                     shootTimer = 0f;
                 }
@@ -85,13 +83,9 @@ public class Enemy : MonoBehaviour
         }
      
     }
-
     private void Shoot()
     {
         if (playerTransform == null) return;
-        if (SkillDropSlot.Instance.enemyBulletOff) return; // hedefleme veya vurma iptal
-        if (SkillDropSlot.Instance.isInvisible) return;
-
 
         Vector3 direction = (playerTransform.position - transform.position).normalized;
         GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.LookRotation(direction));

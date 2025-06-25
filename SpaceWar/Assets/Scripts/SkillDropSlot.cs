@@ -1,5 +1,5 @@
 using System.Collections;
-using UnityEditor.Localization.Platform.Android;
+//using UnityEditor.Localization.Platform.Android;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -16,16 +16,11 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
     public float cooldownTime;
     private Slider cooldownSlider;
     private bool isCoolingDown = false;
-    public bool isDashing = false;
-    public bool isInvisible = false;
-    public bool enemyBulletOff = false;
-    //public bool enemyMoveOff = false;
-    public bool damageBoost = false;
 
 
     private GameObject currentSkill;
     private GameObject playerShip;
-    private GameObject shieldObject;
+    public GameObject shieldObject;
     public GameObject skill5Prefab;
     public GameObject skill7Prefab;
     public GameObject skill8Prefab;
@@ -64,6 +59,11 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
         {
             playerShip = GameObject.FindGameObjectWithTag("Player");
             if (playerShip == null) return; // Hâlâ yoksa fonksiyondan çık
+        }
+        if (shieldObject == null)
+        {
+            shieldObject = playerShip.transform.Find("Sphere").gameObject;
+            if (shieldObject == null) return; // Hâlâ yoksa fonksiyondan çık
         }
     }
     void LoadSavedSkill()
@@ -224,7 +224,7 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
             case "Skill5(Clone)": SpawnPrefabBehindPlayer(); Debug.Log($"Skill kullan�ld�: {skillName}"); cooldownTime = 14f; cooldownSlider.maxValue = cooldownTime; break;
 
 
-            case "Skill6(Clone)": EnemeyBulletOff(3f); Debug.Log($"Skill kullan�ld�: {skillName}"); cooldownTime = 10f; cooldownSlider.maxValue = cooldownTime; break;
+            case "Skill6(Clone)": EnemeyBulletOff(4f); Debug.Log($"Skill kullan�ld�: {skillName}"); cooldownTime = 10f; cooldownSlider.maxValue = cooldownTime; break;
 
 
             case "Skill7(Clone)": DropPrefabOnClosestEnemy(); Debug.Log($"Skill kullanıldı: {skillName}"); cooldownTime = 15f; cooldownSlider.maxValue = cooldownTime; break;
@@ -245,7 +245,7 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
             case "Skill12(Clone)": NuklearBomb(); Debug.Log($"Skill kullan�ld�: {skillName}"); cooldownTime = 20f; cooldownSlider.maxValue = cooldownTime; break;
 
 
-            default: Debug.Log("Bo�"); break;
+            default: Debug.Log("Bos"); break;
 
         }
     }
@@ -259,7 +259,7 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
         Rigidbody rb = playerShip.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            isDashing = true;
+            PlayerSmoothFollow.Instance.isDashing = true;
             Vector3 dashDirection = playerShip.transform.forward.normalized;
             rb.AddForce(dashDirection * dashForce, ForceMode.Impulse);
             StartCoroutine(StopDashAfterTime(rb, dashDuration));
@@ -269,7 +269,7 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
     {
         yield return new WaitForSeconds(duration);
         rb.linearVelocity = Vector3.zero; // Hareketi durdur
-        isDashing = false;
+        PlayerSmoothFollow.Instance.isDashing = false;
     }
 
 /// Shieldi aktif hale getir (skill3)
@@ -287,7 +287,7 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
 /// Görünmez olur (skill4)
     private IEnumerator InvisibilityRoutine(float invisibilityDuration)
     {
-        isInvisible = true;
+        PlayerSmoothFollow.Instance.isInvisible = true;
 
         Renderer[] renderers = playerShip.GetComponentsInChildren<Renderer>();
 
@@ -309,7 +309,7 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
             }
         }
 
-        isInvisible = false;
+        PlayerSmoothFollow.Instance.isInvisible = false;
     }
     private void SetMaterialTransparent(Material mat, float alpha)
     {
@@ -359,13 +359,13 @@ public class SkillDropSlot : MonoBehaviour, IDropHandler
 /// Enemy'in bullet'larını kapat (skill6)
     public void EnemeyBulletOff(float duration)
     {
-        enemyBulletOff = true;
+        PlayerSmoothFollow.Instance.enemyBulletOff = true;
         StartCoroutine(EnemyBulletOffDuration(duration));
     }
     private IEnumerator EnemyBulletOffDuration(float seconds)
     {
         yield return new WaitForSeconds(seconds);
-        enemyBulletOff = false;
+        PlayerSmoothFollow.Instance.enemyBulletOff = false;
     }
 
 /// Meteror yağdır (skill7)
