@@ -22,7 +22,7 @@ public class PlayerSmoothFollow : MonoBehaviour
 
     [Header("Ground Expansion")]
     private GameObject planeReference;
-    private GameObject player;
+    public GameObject player;
     public float planeSize = 500f; // Plane boyutu (1 birim = 1 scale ise 10f olur)
     private HashSet<Vector3> spawnedDirections = new HashSet<Vector3>();
     private List<GameObject> allPlanes = new List<GameObject>();
@@ -35,10 +35,10 @@ public class PlayerSmoothFollow : MonoBehaviour
     private float moveSpeed;
     private float fireRate;
     private float nextFireTime = 0f;
-    private float MaxHealth;
-    private float Health;
+    public float MaxHealth;
+    public float Health;
     private float shield;
-    private Slider healthSlider;
+    public Slider healthSlider;
     private float damageMultiplier=1;
 
     [Header("Hit Effect")]
@@ -240,9 +240,10 @@ public class PlayerSmoothFollow : MonoBehaviour
             }
             Destroy(particleEffect, 2f);
         }
-        Destroy(gameObject);
-
-        GameManager.Instance.GameOver();
+        player.gameObject.SetActive(false);
+        //Destroy(gameObject);
+        GameManager.Instance.spawnStart = false;
+        GameManager.Instance.GameOverADS();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -264,9 +265,8 @@ public class PlayerSmoothFollow : MonoBehaviour
                 }
                 Destroy(particleEffect, 2f);
             }
-            Destroy(gameObject); 
-            
-            GameManager.Instance.GameOver();
+            TakeDamage(9999f);
+
         }
     }
 

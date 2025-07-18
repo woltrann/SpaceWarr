@@ -11,13 +11,17 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        timer += Time.deltaTime;
-
-        if (timer >= spawnInterval)
+        if (GameManager.Instance.spawnStart==true)
         {
-            SpawnEnemy();
-            timer = 0f;
+            timer += Time.deltaTime;
+
+            if (timer >= spawnInterval)
+            {
+                SpawnEnemy();
+                timer = 0f;
+            }
         }
+        
     }
 
     void SpawnEnemy()

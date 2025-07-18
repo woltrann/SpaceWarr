@@ -127,6 +127,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3754931747120050374, guid: 14647d00eb0ccfb4892d27a4afdf3a7e, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3754931747120050374, guid: 14647d00eb0ccfb4892d27a4afdf3a7e, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6600298163405420381, guid: 14647d00eb0ccfb4892d27a4afdf3a7e, type: 3}
       propertyPath: m_LocalScale.y
       value: 0.20000002

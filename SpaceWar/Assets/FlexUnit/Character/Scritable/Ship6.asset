@@ -12,17 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d956d1a9eee4e414b9a6a8749e2e3379, type: 3}
   m_Name: Ship6
   m_EditorClassIdentifier: 
+  currencyType: 1
   shipName: Ays Talon
-  shipLevel: 1
+  shipLevel: 2
   shipmaxLevel: 50
-  price: 1e+11
-  upgradeCost: 0
-  health: 100
-  attackPower: 30
-  attackSpeed: 20
-  attackRange: 40
-  shield: 100
-  moveSpeed: 16
+  price: 250
+  upgradeCost: 4000
+  health: 105
+  attackPower: 32
+  attackSpeed: 22
+  attackRange: 41
+  shield: 105
+  moveSpeed: 16.5
   prefab: {fileID: 1373957889793376313, guid: 71297567768c1bd4aa32955896941939, type: 3}
   customButtonPrefab: {fileID: 2830152679243291689, guid: df90c00df8790f74d82e5b26cb4968fa, type: 3}
   upgradeButtonPrefab: {fileID: 0}

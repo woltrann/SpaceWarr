@@ -1,26 +1,25 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using System;
 using TMPro;
 using Random = UnityEngine.Random;
 
-
 public class ChestTimer : MonoBehaviour
 {
+    public static ChestTimer Instance;
     private SkillDragHandler currentSkillDragHandler;
     public SkillParentController skillParentController;
 
     [Header("Ayarlar")]
-    public int chestID ; // Örneðin: "1" = 4 saatlik kasa, "2" = 8 saatlik kasa
+    public int chestID;
     public float hoursToUnlock = 4;
 
     [Header("UI")]
-    public Sprite[] skillSprites; // skillSprites[0] = Skill1, skillSprites[1] = Skill2, ...
-    public String[] skillNames = { "FlashLeap", "Regenerative Core", "Deflector Shield", "Stealth Cloak ", "AutoTurretDeploy", "EMPWave", "MeteorStrike", "MirrorIllusion", "Timelock", "OverdriveMode", "BlackHoleGranade", "NeutronBomb" };
+    public Sprite[] skillSprites;
+    public string[] skillNames = { "FlashLeap", "Regenerative Core", "Deflector Shield", "Stealth Cloak ", "AutoTurretDeploy", "EMPWave", "MeteorStrike", "MirrorIllusion", "Timelock", "OverdriveMode", "BlackHoleGranade", "NeutronBomb" };
     public Text timerText;
     public Button openChestButton;
     public GameObject ChestResultPanel;
- 
     public GameObject ChestImage;
     public Image skillImageUI;
     public Text Reward;
@@ -29,14 +28,24 @@ public class ChestTimer : MonoBehaviour
     private DateTime unlockTime;
     private bool chestReady = false;
 
+    private int coinOpenCount = 0;
+    private string coinOpenKey;
+    private int freeOpenCount = 0;
+    private string freeOpenKey;
+    private int price = 0;
+
+    void Awake() => Instance = this;
     void Start()
     {
         chestKey = "ChestUnlockTime" + chestID;
+        coinOpenKey = "Chest_CoinOpenCount_" + chestID;
+        freeOpenKey = "Chest_FreeOpenCount_" + chestID;
+
+        coinOpenCount = PlayerPrefs.GetInt(coinOpenKey, 0);
+        freeOpenCount = PlayerPrefs.GetInt(freeOpenKey, 0);
 
         if (PlayerPrefs.HasKey(chestKey))
-        {
             unlockTime = DateTime.Parse(PlayerPrefs.GetString(chestKey));
-        }
         else
         {
             unlockTime = DateTime.Now.AddHours(hoursToUnlock);
@@ -47,186 +56,212 @@ public class ChestTimer : MonoBehaviour
 
     void Update()
     {
-        if (chestReady) return;
+        if (chestID == 3 && coinOpenCount < 3)
+        {
+            price = (coinOpenCount + 1) * 10;
+            timerText.text = $"{price} COIN Ä°LE AÃ‡";
+            openChestButton.interactable = true;
+            chestReady = true;
+            return;
+        }
+
+        if (chestID == 1 && freeOpenCount < 2)
+        {
+            timerText.text = "AÃ‡";
+            openChestButton.interactable = true;
+            chestReady = true;
+            return;
+        }
 
         TimeSpan remaining = unlockTime - DateTime.Now;
 
         if (remaining.TotalSeconds <= 0)
         {
             chestReady = true;
-            timerText.text = "Kasa Açýlabilir!";
+            timerText.text = "Kasa AÃ§Ä±labilir!";
             openChestButton.interactable = true;
+
+            if (chestID == 3)
+            {
+                coinOpenCount = 0;
+                PlayerPrefs.SetInt(coinOpenKey, coinOpenCount);
+            }
+
+            if (chestID == 1)
+            {
+                freeOpenCount = 0;
+                PlayerPrefs.SetInt(freeOpenKey, freeOpenCount);
+            }
+            PlayerPrefs.Save();
         }
         else
         {
-            timerText.text = string.Format("{0:D2}:{1:D2}:{2:D2}",
-                remaining.Hours, remaining.Minutes, remaining.Seconds);
+            chestReady = false;
+            timerText.text = string.Format("{0:D2}:{1:D2}:{2:D2}", remaining.Hours, remaining.Minutes, remaining.Seconds);
+            openChestButton.interactable = false;
         }
     }
+    public void OpenChest1()
+    {
+        if (!chestReady) return;
 
+        Debug.Log($"KASA {chestID} AÃ‡ILDI!");
+        int randomValue = Random.Range(0, 100);
+        string rewardMessage = "";
+
+        if (chestID == 1 && freeOpenCount < 2)
+        {
+            GiveReward(randomValue, ref rewardMessage);
+            ShowRewardPanel(rewardMessage);
+
+            freeOpenCount++;
+            PlayerPrefs.SetInt(freeOpenKey, freeOpenCount);
+            PlayerPrefs.Save();
+
+            if (freeOpenCount >= 2)
+            {
+                unlockTime = DateTime.Now.AddHours(hoursToUnlock);
+                PlayerPrefs.SetString(chestKey, unlockTime.ToString());
+                PlayerPrefs.Save();
+                chestReady = false;
+                openChestButton.interactable = false;
+            }
+        }
+    }
     public void OnOpenChest()
     {
         if (!chestReady) return;
 
-        Debug.Log($"KASA {chestID} AÇILDI!");
-
-        string rewardMessage = ""; // Kazanýlan ödül metni
-
-        // Ödül verme
+        Debug.Log($"KASA {chestID} AÃ‡ILDI!");
         int randomValue = Random.Range(0, 100);
+        string rewardMessage = "";
 
-        if (chestID == 1)
+        
+        if (chestID == 2)
         {
-            if (randomValue < 68)
+            GiveReward(randomValue, ref rewardMessage);
+            ShowRewardPanel(rewardMessage);
+
+            unlockTime = DateTime.Now.AddHours(hoursToUnlock);
+            PlayerPrefs.SetString(chestKey, unlockTime.ToString());
+            PlayerPrefs.Save();
+
+            chestReady = false;
+            openChestButton.interactable = false;
+        }
+        else if (chestID == 3 && coinOpenCount < 3)
+        {
+            if (IAP.Instance.coin >= price)
             {
-                int goldAmount = Random.Range(1000, 3001);
-                GameManager.Instance.totalGold += goldAmount;
-                GameManager.Instance.TotalGoldText.text = GameManager.Instance.totalGold.ToString();
-                PlayerPrefs.SetFloat("TotalGold", GameManager.Instance.totalGold);
-                rewardMessage = $"+ {goldAmount} G";
-            }
-            else if (randomValue < 83)
-            {
-                int skillIndex = Random.Range(1, 4);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
-            else if (randomValue < 93)
-            {
-                int skillIndex = Random.Range(4, 7);
-                rewardMessage = skillNames[skillIndex-1];
-                TrySkills(skillIndex, rewardMessage);
-            }
-            else if (randomValue < 98)
-            {
-                int skillIndex = Random.Range(7, 10);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
+                IAP.Instance.RemoveCoin(price);
+                GiveReward(randomValue, ref rewardMessage);
+                ShowRewardPanel(rewardMessage);
+
+                coinOpenCount++;
+                PlayerPrefs.SetInt(coinOpenKey, coinOpenCount);
+                PlayerPrefs.Save();
+
+                if (coinOpenCount >= 3)
+                {
+                    unlockTime = DateTime.Now.AddHours(hoursToUnlock);
+                    PlayerPrefs.SetString(chestKey, unlockTime.ToString());
+                    PlayerPrefs.Save();
+
+                    chestReady = false;
+                    openChestButton.interactable = false;
+                }
             }
             else
             {
-                int skillIndex = Random.Range(10, 13);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
+                IAP.Instance.panelOpen();
             }
+        }
+    }
 
+    private void GiveReward(int randomValue, ref string rewardMessage)
+    {
+        if (chestID == 1)
+        {
+            if (randomValue < 68)
+                AddGold(Random.Range(1000, 3001), ref rewardMessage);
+            else if (randomValue < 83)
+                GiveSkill(Random.Range(1, 4), ref rewardMessage);
+            else if (randomValue < 93)
+                GiveSkill(Random.Range(4, 7), ref rewardMessage);
+            else if (randomValue < 98)
+                GiveSkill(Random.Range(7, 10), ref rewardMessage);
+            else
+                GiveSkill(Random.Range(10, 13), ref rewardMessage);
         }
         else if (chestID == 2)
         {
             if (randomValue < 56)
-            {
-                int goldAmount = Random.Range(3000, 5001);
-                GameManager.Instance.totalGold += goldAmount;
-                GameManager.Instance.TotalGoldText.text = GameManager.Instance.totalGold.ToString();
-                PlayerPrefs.SetFloat("TotalGold", GameManager.Instance.totalGold);
-                rewardMessage = $"+ {goldAmount} G";
-            }
+                AddGold(Random.Range(3000, 5001), ref rewardMessage);
             else if (randomValue < 74)
-            {
-                int skillIndex = Random.Range(1, 4);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(1, 4), ref rewardMessage);
             else if (randomValue < 87)
-            {
-                int skillIndex = Random.Range(4, 7);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(4, 7), ref rewardMessage);
             else if (randomValue < 95)
-            {
-                int skillIndex = Random.Range(7, 10);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(7, 10), ref rewardMessage);
             else
-            {
-                int skillIndex = Random.Range(10, 13);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(10, 13), ref rewardMessage);
         }
-        else
+        else if (chestID == 3)
         {
             if (randomValue < 44)
-            {
-                int goldAmount = Random.Range(5000, 10001);
-                GameManager.Instance.totalGold += goldAmount;
-                GameManager.Instance.TotalGoldText.text = GameManager.Instance.totalGold.ToString();
-                PlayerPrefs.SetFloat("TotalGold", GameManager.Instance.totalGold);
-                rewardMessage = $"+ {goldAmount} G";
-            }
+                AddGold(Random.Range(5000, 10001), ref rewardMessage);
             else if (randomValue < 65)
-            {
-                int skillIndex = Random.Range(1, 4);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(1, 4), ref rewardMessage);
             else if (randomValue < 81)
-            {
-                int skillIndex = Random.Range(4, 7);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(4, 7), ref rewardMessage);
             else if (randomValue < 92)
-            {
-                int skillIndex = Random.Range(7, 10);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(7, 10), ref rewardMessage);
             else
-            {
-                int skillIndex = Random.Range(10, 13);
-                rewardMessage = skillNames[skillIndex - 1];
-                TrySkills(skillIndex, rewardMessage);
-            }
+                GiveSkill(Random.Range(10, 13), ref rewardMessage);
         }
+    }
 
-        // Göster panelini
+    private void AddGold(int amount, ref string rewardMessage)
+    {
+        GameManager.Instance.totalGold += amount;
+        GameManager.Instance.TotalGoldText.text = GameManager.Instance.totalGold.ToString();
+        PlayerPrefs.SetFloat("TotalGold", GameManager.Instance.totalGold);
+        rewardMessage = $"+ {amount} G";
+    }
+
+    private void GiveSkill(int skillIndex, ref string rewardMessage)
+    {
+        rewardMessage = skillNames[skillIndex - 1];
+        TrySkills(skillIndex, rewardMessage);
+    }
+
+    private void ShowRewardPanel(string rewardMessage)
+    {
         Reward.text = rewardMessage;
         ChestResultPanel.SetActive(true);
         ChestImage.SetActive(true);
-        Invoke(nameof(HideResultPanel), 2f); // 2 saniye sonra paneli kapat
-
-        // Kasa zamanlayýcýsýný sýfýrla
-        unlockTime = DateTime.Now.AddHours(hoursToUnlock);
-        PlayerPrefs.SetString(chestKey, unlockTime.ToString());
-        PlayerPrefs.Save();
-
-        openChestButton.interactable = false;
-        chestReady = false;
+        Invoke(nameof(HideResultPanel), 2f);
     }
+
     void HideResultPanel()
     {
         ChestResultPanel.SetActive(false);
         ChestImage.SetActive(false);
         skillImageUI.gameObject.SetActive(false);
-
     }
+
     public void TrySkills(int skillIndex, string rewardMessage)
     {
-        // Zaten açýlmýþ mý kontrol et
         if (PlayerPrefs.GetInt("SkillUnlocked_" + skillIndex, 0) == 1)
         {
-            // Skill zaten var, altýn ver
-            int goldAmount = Random.Range(2000, 8001);
-            GameManager.Instance.totalGold += goldAmount;
-            GameManager.Instance.TotalGoldText.text = GameManager.Instance.totalGold.ToString();
-            PlayerPrefs.SetFloat("TotalGold", GameManager.Instance.totalGold);
-            Reward.text = $"+ {goldAmount} G";
-
-            skillImageUI.gameObject.SetActive(false); // skill zaten varsa görseli kapat
-
+            AddGold(Random.Range(2000, 8001), ref rewardMessage);
+            skillImageUI.gameObject.SetActive(false);
         }
         else
         {
-            // Yeni skill kazanýldý, kilidi aç
             PlayerPrefs.SetInt("SkillUnlocked_" + skillIndex, 1);
             PlayerPrefs.Save();
-            PlayerPrefs.GetInt("SkillUnlocked_" + skillIndex, 0);
-
-            Reward.text = rewardMessage;
-            Debug.Log("Skill açýlýyor: SkillUnlocked_" + skillIndex + " = " + PlayerPrefs.GetInt("SkillUnlocked_" + skillIndex));
+            rewardMessage = skillNames[skillIndex - 1];
             skillParentController.UnlockSkillByID(skillIndex);
 
             if (skillIndex - 1 < skillSprites.Length && skillIndex > 0)
@@ -235,6 +270,5 @@ public class ChestTimer : MonoBehaviour
                 skillImageUI.gameObject.SetActive(true);
             }
         }
-
     }
 }

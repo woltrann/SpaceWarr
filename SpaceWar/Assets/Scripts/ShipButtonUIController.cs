@@ -85,12 +85,20 @@ public class ShipButtonUIController : MonoBehaviour
         }
         else
         {
-            actionButtonText.text = $"{buyText.GetLocalizedString()} ({currentShip.price}G)"; // "Satýn Al"
+            string currencySymbol = currentShip.currencyType == ShipDetails.CurrencyType.Gold ? "G" : "C";
+            actionButtonText.text = $"{buyText.GetLocalizedString()} ({currentShip.price}{currencySymbol})";
             actionButton.onClick.RemoveAllListeners();
             actionButton.onClick.AddListener(() => BuyShip(currentShip));
             upgradeButton.gameObject.SetActive(false);
 
-            actionButton.interactable = GameManager.Instance.totalGold >= currentShip.price;
+            if (currentShip.currencyType == ShipDetails.CurrencyType.Gold)
+            {
+                actionButton.interactable = GameManager.Instance.totalGold >= currentShip.price;
+            }
+            else if (currentShip.currencyType == ShipDetails.CurrencyType.Coin)
+            {
+                actionButton.interactable = true; // Coinle alýnan gemiler daima aktif
+            }
         }
     }
     private void UpgradeShip(ShipDetails ship)
@@ -176,43 +184,60 @@ public class ShipButtonUIController : MonoBehaviour
     } 
     private void BuyShip(ShipDetails ship)
     {
-        if (GameManager.Instance.totalGold >= ship.price)
+        if (ship.currencyType == ShipDetails.CurrencyType.Gold)
         {
-            GameManager.Instance.totalGold -= ship.price;
-            GameManager.Instance.TotalGoldText.text=GameManager.Instance.totalGold.ToString();
-            PlayerPrefs.SetFloat("TotalGold", GameManager.Instance.totalGold);
-
-            int index = GameManager.Instance.allShips.IndexOf(ship);
-            if (index >= 0)
+            if (GameManager.Instance.totalGold >= ship.price)
             {
-                PlayerPrefs.SetInt("Ship" + index, 1); // Bu gemi satýn alýndý
-                PlayerPrefs.Save();
+                GameManager.Instance.totalGold -= ship.price;
+                GameManager.Instance.TotalGoldText.text = GameManager.Instance.totalGold.ToString();
+                PlayerPrefs.SetFloat("TotalGold", GameManager.Instance.totalGold);
+                CompleteShipPurchase(ship);
             }
-
-            GameManager.Instance.ownedShips.Add(ship);
-
-            Debug.Log($"Satýn alýndý: {ship.shipName}");
-            UpdateButton(ship); // Butonu "Seç" olarak güncelle
+            else
+            {
+                Debug.Log("Yetersiz altýn!");
+            }
         }
-        else
+        else if (ship.currencyType == ShipDetails.CurrencyType.Coin)
         {
-            Debug.Log("Yetersiz bakiye!");
+            if (IAP.Instance.coin >= ship.price)
+            {
+                IAP.Instance.RemoveCoin(ship.price);
+                CompleteShipPurchase(ship);
+            }
+            else
+            {
+                IAP.Instance.panelOpen();
+                Debug.Log("Yetersiz coin!");
+            }
         }
+    }
+    private void CompleteShipPurchase(ShipDetails ship)
+    {
+        int index = GameManager.Instance.allShips.IndexOf(ship);
+        if (index >= 0)
+        {
+            PlayerPrefs.SetInt("Ship" + index, 1); // Bu gemi satýn alýndý
+            PlayerPrefs.Save();
+        }
+
+        GameManager.Instance.ownedShips.Add(ship);
+        Debug.Log($"Satýn alýndý: {ship.shipName}");
+        UpdateButton(ship); // Butonu "Seç" olarak güncelle
     }
     public void ResetBuyingShip()
     {
         PlayerPrefs.DeleteKey("Ship0");
         PlayerPrefs.DeleteKey("Ship1");
-        PlayerPrefs.DeleteKey("Ship2");
+        //PlayerPrefs.DeleteKey("Ship2");
         PlayerPrefs.DeleteKey("Ship3");
         PlayerPrefs.DeleteKey("Ship4");
-        PlayerPrefs.DeleteKey("Ship5");
+        //PlayerPrefs.DeleteKey("Ship5");
         PlayerPrefs.SetInt("SelectedShipIndex", 0);
         PlayerPrefs.Save();
     }
 
-
-//Dil deðiþiminde buton güncellemesi
+    #region Dil deðiþiminde buton güncellemesi
     void OnEnable()
     {
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
@@ -231,6 +256,6 @@ public class ShipButtonUIController : MonoBehaviour
         if (currentShip != null)
             UpdateButton(currentShip);
     }
-
+    #endregion
 
 }

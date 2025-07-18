@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d956d1a9eee4e414b9a6a8749e2e3379, type: 3}
   m_Name: Ship3
   m_EditorClassIdentifier: 
+  currencyType: 1
   shipName: Woltran
   shipLevel: 1
   shipmaxLevel: 30
-  price: 1e+11
-  upgradeCost: 0
+  price: 150
+  upgradeCost: 700
   health: 40
   attackPower: 20
   attackSpeed: 14

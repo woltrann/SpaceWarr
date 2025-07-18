@@ -6,16 +6,20 @@ using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using GoogleMobileAds.Api;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     private ShipDetails currentShip;
+    private InterstitialAd interstitialAd;
+    private RewardedAd rewardedAd;
 
     public List<ShipDetails> allShips; // Inspector'dan atarsın, sırayla 0-5 gemiler
     public List<ShipDetails> ownedShips = new List<ShipDetails>();
     public ShipDetails selectedShip;
     //public List<GameObject> shipObjects;
+    public bool spawnStart = false;
 
 
     public AudioMixer mixer;
@@ -54,17 +58,21 @@ public class GameManager : MonoBehaviour
     public GameObject GUIPanel;
     public GameObject WaveStartPanel;
     public GameObject MainPanel;
-    public GameObject HangarPanel;
+    public GameObject HangarPanel; 
+    public GameObject MarketPanel;
+    public GameObject HangarViewPanel;
     public GameObject SkillsPanel;
     public GameObject PausePanel;
     public GameObject SettingPanel;
     public GameObject InfoPanel;
     public GameObject LanguagePanel;
     public GameObject GameOverPanel;
+    public GameObject GameOverADSPanel;
     public GameObject CongratsPanel;
     public GameObject BGPanel;
     public GameObject ResetPanel;
     public GameObject GoldPanel;
+    public GameObject[] panels;
 
     public static int currentLevel = 1;
     public float currentExp = 0;
@@ -79,6 +87,9 @@ public class GameManager : MonoBehaviour
     public int maxExpCount = 5;
     private Transform player;
 
+    public int dieCount=0;
+    public GameObject buttonADS;
+    public GameObject buttonCoin;
 
     void Awake()
     {
@@ -92,7 +103,8 @@ public class GameManager : MonoBehaviour
         LoadOwnedShips();
         LoadVolumeSettings();
         LoadLanguage();
-        
+        LoadInterstitialAd();
+        LoadRewardedAd();
         score = 0;
         killed = 0;
         totalGold = PlayerPrefs.GetFloat("TotalGold", 0f);
@@ -128,20 +140,180 @@ public class GameManager : MonoBehaviour
         SaveVolumeSettings();
 
     }
-
+    public void panelsOpen(int panelIndeks)
+    {
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (i == panelIndeks)
+            {
+                panels[i].SetActive(true);
+   
+            }
+            else
+            {
+                panels[i].SetActive(false);
+            }
+            
+        }
+    }
     public void StartGame()
     {
+        spawnStart = true;
+
         PlayerSmoothFollow.fight = true;
         currentLevel = 1;
         currentGold = 0;
         MainPanel.SetActive(false);
         HangarPanel.SetActive(false);
         WaveStartPanel.SetActive(true);
+        MarketPanel.SetActive(false);
         GUIPanel.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
         SkillsPanel.GetComponent<RectTransform>().localScale = new Vector3(0f, 0f, 0f);
         GoldPanel.SetActive(false);
        
     }
+
+
+    //Reklam yüklemeleri
+    public void LoadInterstitialAd()
+    {
+        string adUnitId = "ca-app-pub-8298922837517763/9979170984";
+
+        InterstitialAd.Load(adUnitId, new AdRequest(),
+            (InterstitialAd ad, LoadAdError error) =>
+            {
+                if (error != null || ad == null)
+                {
+                    Debug.LogError("Interstitial ad failed to load: " + error);
+                    return;
+                }
+
+                Debug.Log("Interstitial ad loaded successfully");
+                interstitialAd = ad;
+
+                interstitialAd.OnAdFullScreenContentClosed += () =>
+                {
+                    Debug.Log("Interstitial ad closed, showing GameOver panel now.");
+                    GameOver();
+                    dieCount = 0;
+
+                    // Yeni reklam yüklemek için tekrar çağır
+                    LoadInterstitialAd();
+                };
+            });
+    }
+    public void ShowInterstitialAd()
+    {
+        if (interstitialAd != null)
+        {
+            interstitialAd.Show();
+        }
+        else
+        {
+            Debug.Log("Interstitial ad is not ready, showing GameOver panel immediately.");
+            GameOver();
+            dieCount = 0;
+        }
+    }
+    public void LoadRewardedAd()
+    {
+        string adUnitId = "ca-app-pub-8298922837517763/6506829831"; // senin ödüllü reklam ID'in
+
+        RewardedAd.Load(adUnitId, new AdRequest(),
+            (RewardedAd ad, LoadAdError error) =>
+            {
+                if (error != null || ad == null)
+                {
+                    Debug.LogError("Rewarded ad failed to load: " + error);
+                    return;
+                }
+
+                Debug.Log("Rewarded ad loaded successfully");
+                rewardedAd = ad;
+
+                rewardedAd.OnAdFullScreenContentClosed += () =>
+                {
+                    Debug.Log("Rewarded ad closed, loading a new rewarded ad.");
+                    LoadRewardedAd(); // yeni reklamı önceden yüklemek için tekrar çağır
+                };
+            });
+    }
+    public void ShowRewardedAd()
+    {
+        CountdownCircle.Instance.CancelCountdown();
+
+        if (rewardedAd != null)
+        {
+            // Ödül callback'inde sadece ödülü hak ettiğini işaretle
+            bool rewardEarned = false;
+
+            rewardedAd.OnAdFullScreenContentClosed += () =>
+            {
+                Debug.Log("Rewarded ad closed by the user.");
+
+                if (rewardEarned)
+                {
+                    ContinueGameAfterAd();
+                }
+
+                // Yeni reklam yüklemeyi unutma
+                LoadRewardedAd();
+            };
+
+            rewardedAd.Show((Reward reward) =>
+            {
+                Debug.Log($"User rewarded: {reward.Amount} {reward.Type}");
+                rewardEarned = true;
+                // Bu noktada ödül ver, ama ContinueGameAfterAd çağırma
+                // Eğer ödül para vs ise burada ekle
+                //IAP.Instance.AddCoin(20);
+            });
+        }
+        else
+        {
+            Debug.Log("Rewarded ad is not ready yet.");
+            LoadRewardedAd();
+        }
+    }
+    public void ShowRewardedAdChest()
+    {
+
+        if (rewardedAd != null)
+        {
+            // Ödül callback'inde sadece ödülü hak ettiğini işaretle
+            bool rewardEarned = false;
+
+            rewardedAd.OnAdFullScreenContentClosed += () =>
+            {
+                Debug.Log("Rewarded ad closed by the user.");
+
+                if (rewardEarned)
+                {
+                    Debug.Log("Ödül verildi.");
+                    ChestTimer.Instance.OpenChest1();              
+                }
+
+                // Yeni reklam yüklemeyi unutma
+                LoadRewardedAd();
+            };
+
+            rewardedAd.Show((Reward reward) =>
+            {
+                Debug.Log($"User rewarded: {reward.Amount} {reward.Type}");
+                rewardEarned = true;
+                // Bu noktada ödül ver, ama ContinueGameAfterAd çağırma
+                // Eğer ödül para vs ise burada ekle
+                //IAP.Instance.AddCoin(20);
+            });
+        }
+        else
+        {
+            Debug.Log("Rewarded ad is not ready yet.");
+            LoadRewardedAd();
+        }
+    }
+
+
 
     //Exp Sistemi
     public void AddExp(int amount)
@@ -209,19 +381,64 @@ public class GameManager : MonoBehaviour
     
 
     //Panel Sistemi
+    public void GameOverADS()
+    {
+        if (dieCount == 0)
+        {
+            GameOverADSPanel.transform.localScale= new Vector3(1f, 1f, 1f);
+            CountdownCircle.Instance.StartCountdown();
+            dieCount++;
+            buttonADS.SetActive(true);
+            buttonCoin.SetActive(false);
+        }
+        else if (dieCount == 1)
+        {
+            GameOverADSPanel.transform.localScale = new Vector3(1f, 1f, 1f);
+            CountdownCircle.Instance.StartCountdown();
+            buttonADS.SetActive(false);
+            buttonCoin.SetActive(true);
+            dieCount++;
+        }
+        else
+        {
+            GameOver();
+        }
+    }
     public void GameOver()
     {
-        LevelUpPanel.SetActive(false);
-        Time.timeScale = 0;
-        GameOverPanel.SetActive(true);
-        GameoverKilledText.text=killed.ToString();
-        GameoverScoreText.text =score.ToString();
-        GameovercoinText.text = currentGold.ToString();
-        totalGold += currentGold;
-        TotalGoldText.text = totalGold.ToString();
-        GUIPanel.SetActive(false);
-        PlayerPrefs.SetFloat("TotalGold", totalGold);
-        PlayerPrefs.Save();
+        if (dieCount == 1)
+        {
+            GameOverADSPanel.SetActive(false);
+            LevelUpPanel.SetActive(false);
+            Time.timeScale = 0;
+            GameOverPanel.SetActive(true);
+            GameoverKilledText.text = killed.ToString();
+            GameoverScoreText.text = score.ToString();
+            GameovercoinText.text = currentGold.ToString();
+            totalGold += currentGold;
+            TotalGoldText.text = totalGold.ToString();
+            GUIPanel.SetActive(false);
+            PlayerPrefs.SetFloat("TotalGold", totalGold);
+            PlayerPrefs.Save();
+        }
+        else
+        {
+            ShowInterstitialAd();
+
+            GameOverADSPanel.SetActive(false);
+            LevelUpPanel.SetActive(false);
+            Time.timeScale = 0;
+            GameOverPanel.SetActive(true);
+            GameoverKilledText.text=killed.ToString();
+            GameoverScoreText.text =score.ToString();
+            GameovercoinText.text = currentGold.ToString();
+            totalGold += currentGold;
+            TotalGoldText.text = totalGold.ToString();
+            GUIPanel.SetActive(false);
+            PlayerPrefs.SetFloat("TotalGold", totalGold);
+            PlayerPrefs.Save();
+        }
+        
     }
     public void Congrats()
     {
@@ -280,7 +497,6 @@ public class GameManager : MonoBehaviour
 
         SceneManager.LoadScene(1);
     }
-
     public void ResetProgres()
     {
         MapManager.Instance.ResetMapProgress();
@@ -301,7 +517,70 @@ public class GameManager : MonoBehaviour
         Debug.Log("Tüm upgrade kayıtları sıfırlandı.");
         RestartGame();
     }
-    
+
+    public void ContinueGameAfterAd()
+    {
+        
+
+        // Paneli kapat
+        GameOverADSPanel.transform.localScale = new Vector3(0f, 0f, 0f);
+
+        PlayerSmoothFollow.Instance.player.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        PlayerSmoothFollow.Instance.player.gameObject.SetActive(true);
+        spawnStart = true;
+        EnemyWaveManager.Instance.transformm();
+        // GUI ve joystick aktif hale getir
+        GUIPanel.SetActive(true);
+        Joystick.SetActive(true);
+
+        // Savaşı devam ettir
+        PlayerSmoothFollow.fight = true;
+
+        // Oyun devam etsin
+        Time.timeScale = 1;
+
+        PlayerSmoothFollow.Instance.Health = PlayerSmoothFollow.Instance.MaxHealth/2f;
+        PlayerSmoothFollow.Instance.healthSlider.value = PlayerSmoothFollow.Instance.Health;
+        SkillDropSlot.Instance.NuklearBomb();
+    }
+    public void ContinueGameAfterCoin()
+    {
+        if (IAP.Instance.coin >= 20)
+        {
+
+
+            IAP.Instance.RemoveCoin(20);
+           // Countdown'u iptal et
+            CountdownCircle.Instance.CancelCountdown();
+
+            // Paneli kapat
+            GameOverADSPanel.transform.localScale = new Vector3(0f, 0f, 0f);
+
+            PlayerSmoothFollow.Instance.player.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            PlayerSmoothFollow.Instance.player.gameObject.SetActive(true);
+            spawnStart = true;
+            EnemyWaveManager.Instance.transformm();
+            // GUI ve joystick aktif hale getir
+            GUIPanel.SetActive(true);
+            Joystick.SetActive(true);
+
+            // Savaşı devam ettir
+            PlayerSmoothFollow.fight = true;
+
+            // Oyun devam etsin
+            Time.timeScale = 1;
+
+            PlayerSmoothFollow.Instance.Health = PlayerSmoothFollow.Instance.MaxHealth / 2f;
+            PlayerSmoothFollow.Instance.healthSlider.value = PlayerSmoothFollow.Instance.Health;
+            SkillDropSlot.Instance.NuklearBomb();
+        }
+        else
+        {
+            IAP.Instance.panelOpen();
+        }
+    }
+
+
     public void PausePanelOC()  => PausePanel.SetActive(!PausePanel.activeSelf); 
     public void SettingPanelOC()
     {
@@ -313,10 +592,32 @@ public class GameManager : MonoBehaviour
     public void InfoPanelOC() => InfoPanel.SetActive(!InfoPanel.activeSelf);
     public void LanguagePanelOC() => LanguagePanel.SetActive(!LanguagePanel.activeSelf);
     public void GUIPanelOC() => GUIPanel.SetActive(!GUIPanel.activeSelf);
-    public void MainPanelOC() => MainPanel.SetActive(!MainPanel.activeSelf);
+    public void MainPanelOC()
+    {
+        MainPanel.SetActive(!MainPanel.activeSelf); 
+        HangarViewPanel.SetActive(!MainPanel.activeSelf);
+
+    }
+    public void MarketPanelOC()
+    {
+        MarketPanel.SetActive(!MarketPanel.activeSelf);
+        MainPanel.SetActive(!MainPanel.activeSelf);
+
+    }
     public void HangarPanelOC() => HangarPanel.SetActive(!HangarPanel.activeSelf);
     public void ResetPanelOC() => ResetPanel.SetActive(!ResetPanel.activeSelf);
     public void SkillsPanelOC() => SkillsPanel.SetActive(!SkillsPanel.activeSelf);
+    public void HangarViewOC()
+    {
+        if (HangarPanel.activeSelf)
+        {
+            HangarViewPanel.SetActive(true);
+        }
+        else
+        {
+            HangarViewPanel.SetActive(false);
+        }
+    }
 
     public void SetLanguage(string localeCode)
     {

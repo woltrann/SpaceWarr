@@ -31,10 +31,13 @@ public class Enemy : MonoBehaviour
 
     // ✔ Stat çarpanı
     public float statMultiplier = 1f;
-
+    private void Awake()
+    {
+        Instance = this;    
+    }
     private void Start()
     {
-        Instance = this;
+
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
 
         int selectedMapIndex = MapManager.Instance.currentIndex;
@@ -56,8 +59,9 @@ public class Enemy : MonoBehaviour
         statMultiplier = 0;
     }
     private void Update()
-    {
-        if (playerTransform == null) return;
+    {        
+        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+
         if (PlayerSmoothFollow.Instance.isInvisible) return;
 
         if (maxHealth > 0 && !PlayerSmoothFollow.Instance.enemyMoveOff)

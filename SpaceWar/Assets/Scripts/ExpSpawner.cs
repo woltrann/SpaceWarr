@@ -13,6 +13,7 @@ public class ExpSpawner : MonoBehaviour
 
     void Start()
     {
+
         player = GameObject.FindGameObjectWithTag("Player").transform;
         StartCoroutine(SpawnExpRoutine());
     }

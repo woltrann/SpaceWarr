@@ -4,6 +4,10 @@
 [System.Serializable]
 public class ShipDetails : ScriptableObject
 {
+    public enum CurrencyType { Gold, Coin }
+    public CurrencyType currencyType;
+
+
     public string shipName;
     public int shipLevel;
     public int shipmaxLevel;

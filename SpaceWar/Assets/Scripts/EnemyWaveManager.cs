@@ -21,6 +21,7 @@ public class EnemyWaveSet
 
 public class EnemyWaveManager : MonoBehaviour
 {
+    public static EnemyWaveManager Instance;
     public List<EnemyWaveSet> levelWaves;
     private int currentLevelforEnemy = 1;
     public Transform playerTransform; // Uzay gemisinin transformu
@@ -29,6 +30,10 @@ public class EnemyWaveManager : MonoBehaviour
 
     private List<Coroutine> activeCoroutines = new List<Coroutine>();
 
+    private void Awake()
+    {
+        Instance= this;
+    }
     private void Start()
     {
         StartLevel(GameManager.currentLevel);
@@ -111,7 +116,19 @@ public class EnemyWaveManager : MonoBehaviour
             spawnPosition.y = playerTransform.position.y;    // Yüksekliðini sabit tutalým (yerde doðacak mesela)
             Instantiate(prefab, spawnPosition, Quaternion.identity);   // Düþmaný oluþtur
         }
-        
+        if (GameManager.Instance.spawnStart)
+        {
+
+        }
+        else
+        {
+            playerTransform = null;
+        }
+    }
+    public void transformm()
+    {
+        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+
     }
 }
 

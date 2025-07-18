@@ -147,6 +147,30 @@ MonoBehaviour:
     m_Key: "ba\u015Flatma ekran\u0131"
     m_Metadata:
       m_Items: []
+  - m_Id: 23785105852497920
+    m_Key: merket
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24279465111093248
+    m_Key: coin yetersiz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24437843259064320
+    m_Key: coin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24511581409280000
+    m_Key: yeniden diril
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24572553167667200
+    m_Key: "YEN\u0130DEN D\u0130R\u0130L (10 Coin)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25552985563062272
+    m_Key: "reklams\u0131z"
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

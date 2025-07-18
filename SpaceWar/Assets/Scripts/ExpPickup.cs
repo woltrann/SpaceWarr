@@ -10,10 +10,13 @@ public class ExpPickup : MonoBehaviour
 
     private void Start()
     {
-       
-            player = GameObject.FindGameObjectWithTag("Player").transform;
-        
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            player = playerObj.transform;
+        }
     }
+
 
     private void Update()
     {    

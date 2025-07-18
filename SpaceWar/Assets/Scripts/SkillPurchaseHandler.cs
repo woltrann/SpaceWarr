@@ -61,13 +61,11 @@ public class SkillPurchaseHandler : MonoBehaviour
 
         if (currentSkillDragHandler == null)
         {
-            Debug.LogWarning("SkillDragHandler atanmadý.");
             return;
         }
 
         if (currentSkillDragHandler.isUnlocked)
         {
-            Debug.Log("Bu skill zaten satýn alýnmýþ.");
             return;
         }
 
@@ -86,7 +84,6 @@ public class SkillPurchaseHandler : MonoBehaviour
         }
         else
         {
-            Debug.Log("Para yetersiz.");
         }
     }
 
@@ -94,7 +91,6 @@ public class SkillPurchaseHandler : MonoBehaviour
     {    
         if (skillDetails == null)
         {
-            Debug.LogWarning("SkillDetails atanmadý.");
             return;
         }
 

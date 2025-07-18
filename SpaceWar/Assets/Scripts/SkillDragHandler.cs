@@ -66,7 +66,6 @@ public class SkillDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, 
 
     public void UnlockSkill()    // Skill satýn alýndýðýnda çaðrýlýr. Skill artýk kullanýlabilir (sürüklenebilir) olur.
     {
-        Debug.Log("Skill " + skillIndex + " unlocked!");
         isUnlocked = true; // Artýk drag yapýlabilir   
         GetComponent<Button>().interactable = false;        // Artýk butona týklanmasýn, çünkü iþlevi sadece drag olacak
         GetComponent<Image>().color = Color.white;        // Rengini beyaz yap, örneðin satýn alýnmýþ hissi vermek için
