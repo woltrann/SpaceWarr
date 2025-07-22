@@ -513,8 +513,7 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.DeleteKey("Ship" + i + "_Range");
         }
         PlayerPrefs.Save();
-        PlayerPrefs.DeleteAll();
-        Debug.Log("Tüm upgrade kayıtları sıfırlandı.");
+
         RestartGame();
     }
 
